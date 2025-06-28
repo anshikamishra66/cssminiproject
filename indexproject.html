@@ -1,0 +1,148 @@
+// MentalHealthSurveyApp.jsx
+import React, { useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+const initialData = [
+  { category: "Stressed", count: 0 },
+  { category: "Anxious", count: 0 },
+  { category: "Depressed", count: 0 },
+  { category: "Happy", count: 0 },
+];
+
+export default function MentalHealthSurveyApp() {
+  const [data, setData] = useState(initialData);
+  const [selected, setSelected] = useState("");
+  const [user, setUser] = useState(null);
+  const [auth, setAuth] = useState({ email: "", password: "" });
+  const [journal, setJournal] = useState("");
+  const [entries, setEntries] = useState([]);
+
+  const handleLogin = () => {
+    if (auth.email && auth.password) {
+      setUser({ email: auth.email });
+    }
+  };
+
+  const handleSignup = () => {
+    if (auth.email && auth.password) {
+      setUser({ email: auth.email });
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!selected) return;
+    const newData = data.map((item) =>
+      item.category === selected ? { ...item, count: item.count + 1 } : item
+    );
+    setData(newData);
+    setSelected("");
+  };
+
+  const handleJournalSubmit = () => {
+    if (journal.trim() !== "") {
+      setEntries([...entries, { text: journal, date: new Date().toLocaleString() }]);
+      setJournal("");
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="p-4 max-w-md mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-4">🌍 Welcome to MindSphere</h1>
+        <p className="text-center mb-4">Join us in building a mentally healthier world.</p>
+
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="login">
+            <Card>
+              <CardContent className="space-y-4 p-4">
+                <Input placeholder="Email" value={auth.email} onChange={(e) => setAuth({ ...auth, email: e.target.value })} />
+                <Input placeholder="Password" type="password" value={auth.password} onChange={(e) => setAuth({ ...auth, password: e.target.value })} />
+                <Button onClick={handleLogin}>Login</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="signup">
+            <Card>
+              <CardContent className="space-y-4 p-4">
+                <Input placeholder="Email" value={auth.email} onChange={(e) => setAuth({ ...auth, email: e.target.value })} />
+                <Input placeholder="Password" type="password" value={auth.password} onChange={(e) => setAuth({ ...auth, password: e.target.value })} />
+                <Button onClick={handleSignup}>Sign Up</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 max-w-5xl mx-auto space-y-8">
+      <h1 className="text-3xl font-bold text-center">🧠 Welcome, {user.email}</h1>
+
+      <Card>
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-2">How have you been feeling lately?</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+            {data.map((item) => (
+              <Button
+                key={item.category}
+                variant={selected === item.category ? "default" : "outline"}
+                onClick={() => setSelected(item.category)}
+              >
+                {item.category}
+              </Button>
+            ))}
+          </div>
+          <Button onClick={handleSubmit} disabled={!selected}>
+            Submit Response
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-4">📊 Survey Results</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data}>
+              <XAxis dataKey="category" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-2">📝 Daily Journal</h2>
+          <Input
+            placeholder="Write your thoughts here..."
+            value={journal}
+            onChange={(e) => setJournal(e.target.value)}
+            className="mb-2"
+          />
+          <Button onClick={handleJournalSubmit}>Save Entry</Button>
+          <div className="mt-4 space-y-2">
+            {entries.map((entry, index) => (
+              <div key={index} className="p-2 bg-gray-100 rounded">
+                <p className="text-sm text-gray-700">{entry.text}</p>
+                <p className="text-xs text-gray-500">{entry.date}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
